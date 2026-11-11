@@ -1,0 +1,1459 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Apoio Inteligente para Gerenciamento de Projetos | LIAA - PPGES</title>
+
+  <style>
+    :root {
+      --bg-base: #eff3fb;
+
+      --glass-card-bg: rgba(255, 255, 255, 0.45);
+      --glass-card-hover: rgba(255, 255, 255, 0.70);
+      --glass-border: rgba(255, 255, 255, 0.85);
+      --glass-border-hover: rgba(34, 93, 236, 0.45);
+      --glass-shadow: 0 8px 32px 0 rgba(15, 23, 42, 0.06);
+      --glass-shadow-hover: 0 16px 40px 0 rgba(34, 93, 236, 0.15);
+
+      --primary: #225dec;
+      --primary-dark: #1a47b8;
+      --primary-soft: #5b86f2;
+      --primary-pale: #a9c2ff;
+      --navy-main: #0f172a;
+      --slate-text: #334155;
+      --slate-muted: #64748b;
+      --accent-blue: #5b8cff;
+      --ok: #15803d;
+      --late: #b91c1c;
+
+      --mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+      background-color: var(--bg-base);
+      color: var(--slate-text);
+      overflow-x: hidden;
+      line-height: 1.6;
+      min-height: 100vh;
+      position: relative;
+    }
+
+    a { color: inherit; }
+    :focus-visible { outline: 3px solid var(--primary); outline-offset: 3px; border-radius: 8px; }
+
+    /* ---------- Fundo ---------- */
+    .bg-orb { position: fixed; border-radius: 50%; filter: blur(80px); z-index: -2; pointer-events: none; }
+    .orb-1 { top: -5%; left: 10%; width: 450px; height: 450px; background: radial-gradient(circle, rgba(34,93,236,.22) 0%, transparent 70%); }
+    .orb-2 { top: 40%; right: -5%; width: 550px; height: 550px; background: radial-gradient(circle, rgba(91,140,255,.18) 0%, transparent 70%); }
+    .orb-3 { bottom: -5%; left: 20%; width: 500px; height: 500px; background: radial-gradient(circle, rgba(91,134,242,.15) 0%, transparent 70%); }
+    .bg-grid {
+      position: fixed; inset: 0; z-index: -1; pointer-events: none;
+      background-image:
+        linear-gradient(rgba(15,23,42,.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(15,23,42,.035) 1px, transparent 1px);
+      background-size: 44px 44px;
+      mask-image: radial-gradient(ellipse at 50% 0%, #000 30%, transparent 75%);
+      -webkit-mask-image: radial-gradient(ellipse at 50% 0%, #000 30%, transparent 75%);
+    }
+
+    /* ---------- Navegação ---------- */
+    .topnav {
+      position: sticky; top: 0; z-index: 50;
+      backdrop-filter: blur(16px) saturate(160%);
+      -webkit-backdrop-filter: blur(16px) saturate(160%);
+      background: rgba(239, 243, 251, 0.72);
+      border-bottom: 1px solid rgba(148, 163, 184, 0.18);
+    }
+    .topnav-inner {
+      max-width: 1240px; margin: 0 auto; padding: .8rem 1.5rem;
+      display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+    }
+    .brand { display: flex; align-items: center; gap: .6rem; font-weight: 800; color: var(--navy-main); text-decoration: none; font-size: .95rem; }
+    .brand-mark {
+      width: 30px; height: 30px; border-radius: 9px; display: grid; place-items: center;
+      background: var(--navy-main); color: var(--primary-pale);
+    }
+    .nav-links { display: flex; gap: .25rem; list-style: none; }
+    .nav-links a {
+      text-decoration: none; font-size: .86rem; font-weight: 600; color: var(--slate-muted);
+      padding: .4rem .8rem; border-radius: 30px; transition: background .2s, color .2s;
+    }
+    .nav-links a:hover { background: rgba(255,255,255,.7); color: var(--navy-main); }
+    .nav-links a.nav-cta { background: var(--navy-main); color: #fff; }
+    .nav-links a.nav-cta:hover { background: var(--primary-dark); }
+
+    /* ---------- Hero ---------- */
+    header.hero { padding: 5.5rem 1.5rem 3.5rem; text-align: center; }
+    .badge-top {
+      display: inline-flex; align-items: center; gap: .55rem;
+      padding: .45rem 1.1rem .45rem .5rem;
+      background: rgba(255,255,255,.6); border: 1px solid var(--glass-border);
+      border-radius: 50px; color: var(--primary-dark);
+      font-size: .85rem; font-weight: 700; margin-bottom: 1.6rem;
+      backdrop-filter: blur(12px); box-shadow: 0 4px 15px rgba(0,0,0,.03);
+    }
+    .badge-dot {
+      background: var(--primary); color: #fff; font-size: .72rem; font-weight: 800;
+      padding: .15rem .55rem; border-radius: 20px;
+    }
+    header.hero h1 {
+      font-size: clamp(2.4rem, 6vw, 4.4rem);
+      font-weight: 800; line-height: 1.04; letter-spacing: -0.035em;
+      max-width: 980px; margin: 0 auto 1.4rem;
+      background: linear-gradient(115deg, var(--navy-main) 0%, var(--navy-main) 38%, var(--primary) 70%, var(--accent-blue) 100%);
+      -webkit-background-clip: text; background-clip: text; color: transparent;
+      padding-bottom: 2rem;
+    }
+    header.hero p.lead {
+      color: var(--slate-muted); font-size: 1.18rem; max-width: 640px; margin: 0 auto; font-weight: 500;
+    }
+    .hero-actions { display: flex; gap: .75rem; justify-content: center; margin-top: 2.2rem; flex-wrap: wrap; }
+    .btn {
+      display: inline-flex; align-items: center; gap: .55rem;
+      padding: .8rem 1.4rem; border-radius: 14px; font-weight: 700; font-size: .95rem;
+      text-decoration: none; border: 1px solid transparent; cursor: pointer;
+      font-family: inherit; transition: transform .2s, box-shadow .2s, background .2s;
+    }
+    .btn-primary { background: var(--primary); color: #fff; box-shadow: 0 10px 28px rgba(34,93,236,.32); }
+    .btn-primary:hover { background: var(--primary-dark); transform: translateY(-2px); }
+    .btn-ghost { background: rgba(255,255,255,.6); color: var(--navy-main); border-color: var(--glass-border); }
+    .btn-ghost:hover { background: #fff; transform: translateY(-2px); }
+
+    .hero-reveal > * { opacity: 0; transform: translateY(14px); animation: heroIn .7s cubic-bezier(.2,.7,.2,1) forwards; }
+    .hero-reveal > *:nth-child(2) { animation-delay: .08s; }
+    .hero-reveal > *:nth-child(3) { animation-delay: .16s; }
+    .hero-reveal > *:nth-child(4) { animation-delay: .24s; }
+    @keyframes heroIn { to { opacity: 1; transform: none; } }
+
+    .container { max-width: 1100px; margin: 0 auto; padding: 0 1.5rem; }
+    .container-wide { max-width: 1280px; margin: 0 auto; padding: 0 1.5rem; }
+
+    /* ---------- Números ---------- */
+    .stats-bar {
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      margin: 1rem 0 5rem;
+      background: var(--glass-card-bg); border: 1px solid var(--glass-border);
+      backdrop-filter: blur(20px) saturate(160%); -webkit-backdrop-filter: blur(20px) saturate(160%);
+      border-radius: 28px; box-shadow: var(--glass-shadow); overflow: hidden;
+    }
+    .stat-card { padding: 1.8rem 1.4rem; text-align: center; position: relative; }
+    .stat-card + .stat-card::before {
+      content: ''; position: absolute; left: 0; top: 25%; bottom: 25%;
+      width: 1px; background: rgba(148,163,184,.35);
+    }
+    .stat-number {
+      font-size: clamp(2.4rem, 4vw, 3.3rem); font-weight: 800; line-height: 1;
+      color: var(--primary); letter-spacing: -0.03em; margin-bottom: .5rem;
+      font-variant-numeric: tabular-nums;
+    }
+    .stat-label { font-size: .92rem; color: var(--slate-muted); font-weight: 600; }
+
+    /* ---------- Seções ---------- */
+    section { margin-bottom: 5.5rem; scroll-margin-top: 80px; }
+    .section-title {
+      font-size: clamp(1.6rem, 3vw, 2.1rem); font-weight: 800; color: var(--navy-main);
+      letter-spacing: -0.02em; margin-bottom: .5rem;
+      display: flex; align-items: center; gap: .75rem;
+    }
+    .section-title::before {
+      content: ''; width: 6px; height: 1.8rem; background: var(--primary); border-radius: 4px; flex-shrink: 0;
+    }
+    .section-sub { color: var(--slate-muted); max-width: 680px; margin-bottom: 2rem; font-size: 1.02rem; padding-left: 1.2rem; }
+
+    .grid-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; }
+
+    .glass-card {
+      background: var(--glass-card-bg); border: 1px solid var(--glass-border);
+      backdrop-filter: blur(20px) saturate(160%); -webkit-backdrop-filter: blur(20px) saturate(160%);
+      border-radius: 24px; padding: 1.8rem; box-shadow: var(--glass-shadow);
+      transition: background .3s, border-color .3s, box-shadow .3s;
+    }
+    .glass-card:hover { background: var(--glass-card-hover); border-color: var(--glass-border-hover); box-shadow: var(--glass-shadow-hover); }
+    .glass-card h3 { font-size: 1.15rem; color: var(--navy-main); margin-bottom: .6rem; font-weight: 700; line-height: 1.35; }
+    .card-icon {
+      width: 46px; height: 46px; border-radius: 14px; display: grid; place-items: center;
+      font-size: 1.35rem; margin-bottom: 1.1rem;
+      background: rgba(255,255,255,.8); border: 1px solid rgba(34,93,236,.18);
+      box-shadow: 0 6px 18px rgba(34,93,236,.10);
+    }
+    .glass-card p { font-size: .97rem; }
+    .glass-card strong { color: var(--navy-main); }
+
+    .video-card { padding: .8rem; max-width: 960px; margin: 0 auto; }
+    .video-card iframe { display: block; width: 100%; aspect-ratio: 16 / 9; height: auto; border: none; border-radius: 16px; }
+
+    /* =================================================================
+       DEMO DO AGENTE
+       ================================================================= */
+    #demo { margin-bottom: 6rem; }
+    .demo-shell {
+      position: relative;
+      border-radius: 32px;
+      padding: 2rem;
+      background:
+        radial-gradient(circle at 15% 0%, rgba(34,93,236,.14), transparent 45%),
+        radial-gradient(circle at 100% 100%, rgba(91,140,255,.14), transparent 45%),
+        rgba(255,255,255,.35);
+      border: 1px solid var(--glass-border);
+      box-shadow: 0 30px 80px rgba(15,23,42,.10);
+    }
+    .demo-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 1.5rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
+    .demo-head .section-sub { margin-bottom: 0; }
+
+    .demo-controls { display: flex; align-items: center; gap: .75rem; flex-wrap: wrap; }
+    .steps { display: flex; gap: .4rem; list-style: none; flex-wrap: wrap; }
+    .steps li {
+      display: flex; align-items: center; gap: .45rem;
+      font-size: .82rem; font-weight: 700; color: var(--slate-muted);
+      padding: .4rem .8rem .4rem .45rem; border-radius: 30px;
+      background: rgba(255,255,255,.55); border: 1px solid var(--glass-border);
+      transition: all .3s;
+    }
+    .steps li .n {
+      width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center;
+      background: rgba(100,116,139,.15); font-size: .72rem;
+    }
+    .steps li.active { color: var(--navy-main); border-color: rgba(34,93,236,.4); background: #fff; box-shadow: 0 6px 16px rgba(34,93,236,.15); }
+    .steps li.active .n { background: var(--accent-blue); color: #fff; }
+    .steps li.done { color: var(--primary-dark); }
+    .steps li.done .n { background: var(--primary); color: #fff; }
+    .btn-small { padding: .5rem 1rem; font-size: .85rem; border-radius: 30px; }
+
+    .demo-grid { display: grid; grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.15fr); gap: 1.5rem; align-items: start; }
+
+    /* Janela do app */
+    .app-window {
+      background: #fff; border-radius: 20px; overflow: hidden;
+      border: 1px solid rgba(15,23,42,.08);
+      box-shadow: 0 20px 50px rgba(15,23,42,.12);
+    }
+    .win-bar {
+      display: flex; align-items: center; gap: .75rem;
+      padding: .7rem 1rem; border-bottom: 1px solid #eef2f6; background: #fafbfc;
+    }
+    .win-dots { display: flex; gap: 6px; }
+    .win-dots i { width: 10px; height: 10px; border-radius: 50%; background: #e2e8f0; display: block; }
+    .win-title { font-weight: 800; color: var(--navy-main); font-size: .92rem; display: flex; align-items: center; gap: .45rem; }
+    .win-title svg { color: var(--navy-main); }
+    .win-crumb { font-size: .7rem; font-weight: 700; color: var(--slate-muted); letter-spacing: .03em; margin-left: auto; }
+    .live {
+      display: inline-flex; align-items: center; gap: .35rem; font-size: .72rem; font-weight: 700;
+      color: var(--primary-dark); background: rgba(34,93,236,.1); padding: .15rem .55rem; border-radius: 20px;
+    }
+    .live::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--primary); animation: pulse 1.6s infinite; }
+    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .3; } }
+
+    /* Chat */
+    .chat-stage { position: sticky; top: 90px; }
+    .chat-backdrop { background: #8a8f96; padding: 1.1rem; position: relative; }
+    .chat-backdrop::before {
+      content: ''; position: absolute; inset: 0;
+      background:
+        linear-gradient(#9aa0a7 0 0) 1.1rem 1.1rem / 40% 14px no-repeat,
+        linear-gradient(#9aa0a7 0 0) 1.1rem 2.2rem / 70% 10px no-repeat;
+      opacity: .7;
+    }
+    .chat-modal {
+      position: relative; background: #fff; border-radius: 14px; display: flex; flex-direction: column;
+      height: 560px; box-shadow: 0 18px 40px rgba(0,0,0,.25);
+    }
+    .chat-head { padding: .85rem 1rem .7rem; border-bottom: 1px solid #eef2f6; }
+    .chat-head-top { display: flex; justify-content: space-between; align-items: flex-start; }
+    .chat-head h4 { font-size: .95rem; color: var(--navy-main); font-weight: 700; }
+    .chat-head small { color: var(--slate-muted); font-size: .76rem; display: block; margin-top: -2px; }
+    .chat-head-icons { display: flex; gap: .6rem; color: var(--slate-muted); }
+    .ctx-chips { display: flex; gap: .3rem; margin-top: .55rem; flex-wrap: wrap; }
+    .ctx-chips span { font-size: .7rem; padding: .15rem .5rem; border-radius: 6px; background: #f1f5f9; color: var(--slate-text); }
+    .ctx-chips span.k { font-weight: 700; background: #e2e8f0; color: var(--navy-main); }
+
+    .chat-body { flex: 1; overflow-y: auto; padding: 1rem; display: flex; flex-direction: column; gap: .8rem; scroll-behavior: auto; }
+    .chat-body::-webkit-scrollbar { width: 6px; }
+    .chat-body::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 6px; }
+
+    .msg { max-width: 88%; padding: .7rem .9rem; border-radius: 14px; font-size: .84rem; line-height: 1.55; animation: msgIn .35s cubic-bezier(.2,.7,.2,1); }
+    .msg time { display: block; font-size: .66rem; font-style: italic; margin-top: .3rem; opacity: .75; }
+    .msg-user { align-self: flex-end; background: var(--primary); color: #fff; border-bottom-right-radius: 4px; }
+    .msg-agent { align-self: flex-start; background: #f3f4f6; color: #1f2937; border-bottom-left-radius: 4px; }
+    .msg-agent strong { color: #0f172a; }
+    .msg-agent .ln + .ln { margin-top: .2rem; }
+    .msg-agent .ln.h { font-weight: 800; color: #0f172a; margin-top: .4rem; }
+    .msg-agent .ln.li { padding-left: .9rem; position: relative; }
+    .msg-agent .ln.li::before { content: ''; position: absolute; left: .15rem; top: .62em; width: 5px; height: 5px; border-radius: 50%; background: var(--primary); }
+    @keyframes msgIn { from { opacity: 0; transform: translateY(8px) scale(.98); } to { opacity: 1; transform: none; } }
+
+    .thinking { display: flex; align-items: center; gap: .6rem; }
+    .dots { display: inline-flex; gap: 3px; }
+    .dots i { width: 6px; height: 6px; border-radius: 50%; background: var(--slate-muted); animation: bounce 1.1s infinite; display: block; }
+    .dots i:nth-child(2) { animation-delay: .15s; }
+    .dots i:nth-child(3) { animation-delay: .3s; }
+    @keyframes bounce { 0%,60%,100% { transform: translateY(0); opacity: .5; } 30% { transform: translateY(-4px); opacity: 1; } }
+
+    .chat-input { display: flex; gap: .6rem; padding: .75rem; border-top: 1px solid #eef2f6; align-items: center; }
+    .input-box {
+      flex: 1; min-height: 44px; background: #f3f4f6; border-radius: 12px; padding: .7rem .85rem;
+      font-size: .84rem; color: #1f2937; position: relative; display: flex; align-items: center;
+    }
+    .input-box .ph { color: #9ca3af; position: absolute; left: .85rem; }
+    .input-box .caret { display: inline-block; width: 2px; height: 1.05em; background: var(--primary); margin-left: 1px; animation: blink 1s steps(1) infinite; vertical-align: middle; }
+    .input-box:not(.typing) .caret { display: none; }
+    @keyframes blink { 50% { opacity: 0; } }
+    .send-btn {
+      width: 42px; height: 42px; border-radius: 50%; border: none; display: grid; place-items: center;
+      background: var(--primary-pale); color: #fff; transition: background .2s, transform .15s;
+    }
+    .send-btn.ready { background: var(--primary); }
+    .send-btn.pressed { transform: scale(.86); }
+
+    /* Dashboard */
+    .dash { padding: 1.1rem; display: flex; flex-direction: column; gap: 1rem; background: #fcfdfe; }
+    .dash-title { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; flex-wrap: wrap; }
+    .dash-title h4 { font-size: 1.1rem; color: var(--navy-main); font-weight: 800; letter-spacing: -.01em; }
+    .dash-title p { font-size: .76rem; color: var(--slate-muted); }
+
+    .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: .6rem; }
+    .kpi { border: 1px solid #e8edf3; border-radius: 12px; padding: .7rem .8rem; background: #fff; transition: border-color .4s, box-shadow .4s; }
+    .kpi span { font-size: .72rem; color: var(--slate-muted); font-weight: 600; display: block; }
+    .kpi strong { font-size: 1.35rem; color: var(--navy-main); font-weight: 800; font-variant-numeric: tabular-nums; letter-spacing: -.02em; line-height: 1.3; display: block; }
+    .kpi em { font-style: normal; font-size: .68rem; color: var(--slate-muted); }
+    .kpi.flash { border-color: rgba(34,93,236,.55); box-shadow: 0 0 0 4px rgba(34,93,236,.10); }
+
+    .panel { border: 1px solid #e8edf3; border-radius: 12px; background: #fff; overflow: hidden; }
+    .panel-head { display: flex; justify-content: space-between; align-items: center; padding: .65rem .85rem; border-bottom: 1px solid #f1f5f9; gap: .5rem; }
+    .panel-head h5 { font-size: .82rem; color: var(--navy-main); font-weight: 700; }
+    .panel-head small { font-size: .7rem; color: var(--slate-muted); }
+
+    .exec-scroll { overflow-x: auto; }
+    .exec-table { min-width: 520px; font-size: .74rem; }
+    .exec-row {
+      display: grid; grid-template-columns: 1.9fr 1fr .6fr .9fr .7fr .75fr .55fr;
+      gap: .4rem; padding: .55rem .85rem; align-items: center; border-bottom: 1px solid #f4f6f9;
+      font-variant-numeric: tabular-nums;
+    }
+    .exec-row.head { background: #f8fafc; color: var(--slate-muted); font-weight: 700; font-size: .7rem; }
+    .exec-row .num { text-align: right; }
+    .exec-row .p { color: var(--navy-main); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .exec-row .p small { display: block; color: var(--slate-muted); font-weight: 500; font-size: .66rem; }
+    .exec-row.new { animation: rowIn .55s cubic-bezier(.2,.7,.2,1); background: rgba(34,93,236,.05); }
+    .exec-row.settled { transition: background 1.2s; background: transparent; }
+    @keyframes rowIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: none; } }
+    .empty { padding: 1.1rem .85rem; color: var(--slate-muted); font-size: .78rem; text-align: center; }
+
+    .pill { display: inline-flex; align-items: center; gap: .25rem; font-size: .68rem; font-weight: 700; padding: .12rem .5rem; border-radius: 20px; white-space: nowrap; }
+    .pill-ok { background: rgba(22,163,74,.12); color: var(--ok); border: 1px solid rgba(22,163,74,.28); }
+    .pill-run { background: rgba(34,93,236,.10); color: var(--primary-dark); border: 1px solid rgba(34,93,236,.28); }
+    .pill-late { background: rgba(220,38,38,.09); color: var(--late); border: 1px solid rgba(220,38,38,.25); }
+    .pill-read { background: #fff; color: var(--slate-text); border: 1px solid #cbd5e1; }
+    .pill-write { background: rgba(34,93,236,.08); color: var(--primary-dark); border: 1px solid rgba(34,93,236,.35); }
+    .spin { width: 9px; height: 9px; border-radius: 50%; border: 2px solid currentColor; border-right-color: transparent; animation: spin .7s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Trace */
+    .trace-body { padding: .8rem .85rem; }
+    .trace-prompt { font-size: .78rem; background: #f8fafc; border-radius: 8px; padding: .5rem .7rem; color: var(--navy-main); margin-bottom: .7rem; }
+    .trace-meta { display: grid; grid-template-columns: repeat(3, 1fr); gap: .5rem; margin-bottom: .8rem; }
+    .trace-meta div span { display: block; font-size: .66rem; color: var(--slate-muted); }
+    .trace-meta div b { font-size: .78rem; color: var(--navy-main); font-variant-numeric: tabular-nums; }
+    .stages { position: relative; padding-left: 1.1rem; }
+    .stages::before { content: ''; position: absolute; left: 4px; top: 6px; bottom: 6px; width: 1px; background: #dbe3ec; }
+    .stage { position: relative; margin-bottom: .6rem; animation: msgIn .35s ease; }
+    .stage::before { content: ''; position: absolute; left: calc(-1.1rem + 0px); top: 4px; width: 9px; height: 9px; border-radius: 50%; background: var(--primary); }
+    .stage-label { font-size: .66rem; font-weight: 800; color: var(--slate-muted); margin-bottom: .35rem; letter-spacing: .04em; }
+    .tool-call { border: 1px solid #e8edf3; border-radius: 10px; padding: .55rem .7rem; margin-bottom: .4rem; animation: msgIn .35s ease; }
+    .tool-call-top { display: flex; align-items: center; gap: .4rem; flex-wrap: wrap; }
+    .tool-call-top code { font-family: var(--mono); font-size: .76rem; color: var(--navy-main); font-weight: 500; }
+    .tool-call-top .t { margin-left: auto; font-size: .66rem; color: var(--slate-muted); font-variant-numeric: tabular-nums; }
+    .tool-call pre { font-family: var(--mono); font-size: .68rem; background: #f8fafc; border-radius: 6px; padding: .4rem .55rem; margin-top: .45rem; color: var(--slate-text); white-space: pre-wrap; word-break: break-all; }
+
+    .dash-split { display: grid; grid-template-columns: 1.1fr 1fr; gap: 1rem; }
+    .bars { padding: .75rem .85rem; display: flex; flex-direction: column; gap: .5rem; min-height: 120px; }
+    .bar-row { display: grid; grid-template-columns: 1fr; gap: .2rem; animation: msgIn .35s ease; }
+    .bar-row .lbl { display: flex; justify-content: space-between; font-size: .7rem; color: var(--slate-text); }
+    .bar-row .lbl b { font-variant-numeric: tabular-nums; }
+    .bar-track { height: 8px; background: #eef2f6; border-radius: 6px; overflow: hidden; }
+    .bar-fill { height: 100%; width: 0; background: var(--accent-blue); border-radius: 6px; transition: width .7s cubic-bezier(.2,.7,.2,1); }
+    .bar-fill.w { background: var(--primary-dark); }
+
+    .activity { padding: .8rem .85rem; transition: background .6s; }
+    .activity.flash { background: rgba(34,93,236,.07); }
+    .activity.alert { background: rgba(220,38,38,.05); }
+    .activity h6 { font-size: .84rem; color: var(--navy-main); font-weight: 700; margin-bottom: .45rem; }
+    .act-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .45rem .7rem; font-size: .72rem; }
+    .act-grid span { display: block; color: var(--slate-muted); font-size: .66rem; }
+    .act-grid b { color: var(--navy-main); font-variant-numeric: tabular-nums; }
+    .act-grid b.changed { color: var(--primary); }
+    .act-grid s { color: var(--slate-muted); font-weight: 500; margin-right: .3rem; }
+    .progress { height: 6px; background: #eef2f6; border-radius: 6px; margin-top: .25rem; }
+
+    .demo-note { margin-top: 1rem; font-size: .8rem; color: var(--slate-muted); text-align: center; }
+
+    /* ---------- Arquitetura ---------- */
+    .arch-card { padding: 2rem; }
+    .arch {
+      display: grid;
+      grid-template-columns: minmax(0,1fr) 56px minmax(0,1fr) 56px minmax(0,1fr);
+      grid-template-rows: auto 64px auto 44px auto;
+      grid-template-areas:
+        "ui    a1 gw    a2 llm"
+        "notes .  .     .  a3"
+        "notes .  tools a4 guard"
+        "notes .  a5    .  ."
+        "notes .  app   a6 db";
+    }
+    .n-ui { grid-area: ui; } .n-gw { grid-area: gw; } .n-llm { grid-area: llm; }
+    .n-guard { grid-area: guard; } .n-tools { grid-area: tools; }
+    .n-app { grid-area: app; } .n-db { grid-area: db; }
+    .a1 { grid-area: a1; } .a2 { grid-area: a2; } .a3 { grid-area: a3; }
+    .a4 { grid-area: a4; } .a5 { grid-area: a5; } .a6 { grid-area: a6; }
+    .arch-notes { grid-area: notes; align-self: start; margin: 1.6rem 1.5rem 0 0; padding-top: 1.2rem; border-top: 1px dashed rgba(148,163,184,.45); }
+
+    .node {
+      position: relative; background: rgba(255,255,255,.85);
+      border: 1px solid rgba(15,23,42,.08); border-radius: 18px;
+      padding: 1rem 1.1rem; box-shadow: 0 10px 28px rgba(15,23,42,.06);
+      transition: border-color .25s, box-shadow .25s, transform .25s;
+    }
+    .node:hover { border-color: var(--glass-border-hover); box-shadow: var(--glass-shadow-hover); transform: translateY(-2px); }
+    .node-top { display: flex; align-items: center; gap: .7rem; margin-bottom: .5rem; }
+    .node-ico {
+      width: 38px; height: 38px; border-radius: 11px; flex-shrink: 0;
+      display: grid; place-items: center; background: var(--navy-main); color: var(--primary-pale);
+    }
+    .node h4 { font-size: .98rem; color: var(--navy-main); font-weight: 800; line-height: 1.2; }
+    .node small { display: block; font-size: .72rem; color: var(--slate-muted); font-weight: 600; }
+    .node p { font-size: .82rem; color: var(--slate-muted); line-height: 1.5; }
+    .node .chips { display: flex; flex-wrap: wrap; gap: .3rem; margin-top: .6rem; }
+    .node .chips span {
+      font-size: .7rem; font-weight: 700; color: var(--primary-dark);
+      background: rgba(34,93,236,.08); border: 1px solid rgba(34,93,236,.18);
+      border-radius: 6px; padding: .1rem .45rem;
+    }
+    .n-llm .node-ico { background: linear-gradient(135deg, var(--primary), var(--accent-blue)); color: #fff; }
+    .n-guard {
+      border: 1.5px solid rgba(34,93,236,.55);
+      background: radial-gradient(circle at 0% 0%, rgba(34,93,236,.12), transparent 60%), rgba(255,255,255,.9);
+    }
+    .n-guard .node-ico {
+      border-radius: 50%; background: #fff; color: var(--primary);
+      border: 2px solid var(--primary); box-shadow: 0 0 0 5px rgba(34,93,236,.12);
+    }
+    .n-db .node-ico { background: var(--slate-text); }
+
+    /* Setas */
+    .arrow { position: relative; display: flex; align-items: center; justify-content: center; }
+    .arrow i { display: block; }
+    .arrow.right i, .arrow.left i {
+      width: calc(100% - 16px); height: 2px;
+      background: linear-gradient(90deg, var(--primary) 60%, transparent 0) 0 0 / 11px 2px repeat-x;
+      animation: flowR .7s linear infinite;
+    }
+    .arrow.left i { animation-name: flowL; }
+    .arrow.lr i {
+      width: calc(100% - 24px); height: 2px;
+      background: linear-gradient(90deg, var(--primary) 60%, transparent 0) 0 0 / 11px 2px repeat-x;
+      animation: flowL .7s linear infinite;
+    }
+    .arrow.lr::before, .arrow.lr::after { content: ''; position: absolute; top: 50%; transform: translateY(-50%); width: 0; height: 0; border: 6px solid transparent; }
+    .arrow.lr::before { left: 2px; border-right: 9px solid var(--primary); border-left-width: 0; }
+    .arrow.lr::after { right: 2px; border-left: 9px solid var(--primary); border-right-width: 0; }
+    .arrow.down i, .arrow.ud i {
+      width: 2px; height: calc(100% - 12px);
+      background: linear-gradient(180deg, var(--primary) 60%, transparent 0) 0 0 / 2px 11px repeat-y;
+      animation: flowD .7s linear infinite;
+    }
+    .arrow::after, .arrow.ud::before { content: ''; position: absolute; width: 0; height: 0; border: 6px solid transparent; }
+    .arrow.right::after { right: 4px; top: 50%; transform: translateY(-50%); border-left: 9px solid var(--primary); border-right-width: 0; }
+    .arrow.left::after { left: 4px; top: 50%; transform: translateY(-50%); border-right: 9px solid var(--primary); border-left-width: 0; }
+    .arrow.down::after, .arrow.ud::after { bottom: 0; left: 50%; transform: translateX(-50%); border-top: 9px solid var(--primary); border-bottom-width: 0; }
+    .arrow.ud::before { top: 0; left: 50%; transform: translateX(-50%); border-bottom: 9px solid var(--primary); border-top-width: 0; }
+    .arrow-label {
+      position: absolute; left: calc(50% + 12px); top: 50%; transform: translateY(-50%);
+      font-size: .7rem; font-weight: 700; color: var(--slate-muted); white-space: nowrap;
+    }
+    @keyframes flowR { to { background-position: 11px 0; } }
+    @keyframes flowL { to { background-position: -11px 0; } }
+    @keyframes flowD { to { background-position: 0 11px; } }
+
+    .arch-notes h4 { font-size: .95rem; color: var(--navy-main); font-weight: 800; margin-bottom: .7rem; }
+    .arch-notes ol { list-style: none; counter-reset: s; display: flex; flex-direction: column; gap: .55rem; }
+    .arch-notes li { counter-increment: s; position: relative; padding-left: 2rem; font-size: .84rem; color: var(--slate-text); line-height: 1.45; }
+    .arch-notes li::before {
+      content: counter(s); position: absolute; left: 0; top: 0;
+      width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center;
+      background: rgba(34,93,236,.12); color: var(--primary-dark); font-size: .72rem; font-weight: 800;
+    }
+
+    @media (max-width: 860px) {
+      .arch-card { padding: 1.2rem; }
+      .arch {
+        grid-template-columns: minmax(0, 1fr); grid-template-rows: none;
+        grid-template-areas: "ui" "a1" "gw" "a2" "llm" "a3" "guard" "a4" "tools" "a5" "app" "a6" "db" "notes";
+        max-width: 460px; margin: 0 auto;
+      }
+      .arrow { height: 40px; }
+      .arrow.right i, .arrow.left i {
+        width: 2px; height: calc(100% - 12px);
+        background: linear-gradient(180deg, var(--primary) 60%, transparent 0) 0 0 / 2px 11px repeat-y;
+        animation-name: flowD;
+      }
+      .arrow.right::after, .arrow.left::after {
+        right: auto; top: auto; bottom: 0; left: 50%; transform: translateX(-50%);
+        border: 6px solid transparent; border-top: 9px solid var(--primary); border-bottom-width: 0;
+      }
+      .arrow.lr i {
+        width: 2px; height: calc(100% - 24px);
+        background: linear-gradient(180deg, var(--primary) 60%, transparent 0) 0 0 / 2px 11px repeat-y;
+        animation-name: flowD;
+      }
+      .arrow.lr::before { left: 50%; top: 2px; transform: translateX(-50%); border: 6px solid transparent; border-bottom: 9px solid var(--primary); border-top-width: 0; }
+      .arrow.lr::after { left: 50%; right: auto; top: auto; bottom: 2px; transform: translateX(-50%); border: 6px solid transparent; border-top: 9px solid var(--primary); border-bottom-width: 0; }
+      .arch-notes { margin: 1.5rem 0 0; }
+    }
+
+    /* ---------- Linha do tempo ---------- */
+    .filter-bar { display: flex; gap: .6rem; margin-bottom: 2rem; flex-wrap: wrap; padding-left: 1.2rem; }
+    .filter-btn {
+      background: rgba(255,255,255,.5); border: 1px solid var(--glass-border); color: var(--slate-text);
+      padding: .5rem 1.15rem; border-radius: 30px; cursor: pointer; font-size: .85rem; font-weight: 700;
+      font-family: inherit; transition: all .2s; backdrop-filter: blur(12px);
+    }
+    .filter-btn .count { opacity: .6; margin-left: .25rem; }
+    .filter-btn.active, .filter-btn:hover { background: var(--primary); color: #fff; border-color: var(--primary); box-shadow: 0 4px 15px rgba(34,93,236,.3); }
+
+    .timeline { position: relative; padding-left: 2.6rem; margin-left: 1.2rem; }
+    .timeline::before {
+      content: ''; position: absolute; left: 0; top: .5rem; bottom: .5rem; width: 3px; border-radius: 3px;
+      background: linear-gradient(var(--primary), var(--primary-soft) 70%, rgba(34,93,236,.15));
+    }
+    .timeline-item { position: relative; margin-bottom: 1.1rem; }
+    .timeline-dot {
+      position: absolute; left: calc(-2.6rem - 13px); top: 1.15rem;
+      width: 29px; height: 29px; border-radius: 50%; display: grid; place-items: center;
+      background: var(--primary); color: #fff; font-size: .74rem; font-weight: 800;
+      border: 3px solid var(--bg-base); box-shadow: 0 0 0 1px rgba(34,93,236,.4), 0 4px 12px rgba(34,93,236,.3);
+    }
+    .timeline-item.active .timeline-dot { background: var(--accent-blue); box-shadow: 0 0 0 1px rgba(91,140,255,.4), 0 4px 12px rgba(91,140,255,.3); }
+
+    .timeline-content {
+      width: 100%; text-align: left; font: inherit; color: inherit;
+      background: var(--glass-card-bg); border: 1px solid var(--glass-border);
+      backdrop-filter: blur(20px) saturate(160%); -webkit-backdrop-filter: blur(20px) saturate(160%);
+      border-radius: 20px; padding: 1.2rem 1.4rem; cursor: pointer; box-shadow: var(--glass-shadow);
+      transition: background .25s, border-color .25s, box-shadow .25s, transform .25s;
+    }
+    .timeline-content:hover { border-color: var(--glass-border-hover); background: var(--glass-card-hover); transform: translateX(4px); box-shadow: var(--glass-shadow-hover); }
+    .timeline-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: .5rem; }
+    .timeline-header strong { color: var(--navy-main); font-size: 1.05rem; }
+    .timeline-header .right { display: flex; align-items: center; gap: .6rem; }
+    .chev { transition: transform .3s; color: var(--slate-muted); }
+    .timeline-content.open .chev { transform: rotate(180deg); }
+    .timeline-summary { margin-top: .35rem; color: var(--slate-muted); }
+    .status-tag { font-size: .75rem; font-weight: 700; padding: .2rem .7rem; border-radius: 20px; }
+    .tag-done { background: rgba(22,163,74,.12); color: var(--ok); border: 1px solid rgba(22,163,74,.3); }
+    .tag-active { background: rgba(34,93,236,.12); color: var(--primary-dark); border: 1px solid rgba(34,93,236,.3); }
+
+    .expand-details {
+      display: grid; grid-template-rows: 0fr; transition: grid-template-rows .35s ease, margin-top .3s, padding-top .3s;
+      color: var(--slate-muted); font-size: .95rem;
+    }
+    .expand-details > div { overflow: hidden; }
+    .timeline-content.open .expand-details { grid-template-rows: 1fr; margin-top: 1rem; padding-top: 1rem; border-top: 1px dashed rgba(148,163,184,.4); }
+    .expand-details strong { color: var(--navy-main); }
+    .tl-empty { display: none; padding: 1.4rem; text-align: center; color: var(--slate-muted); }
+
+    footer { text-align: center; padding: 3rem 1.5rem; border-top: 1px solid rgba(148,163,184,.2); color: var(--slate-muted); font-size: .9rem; font-weight: 500; }
+
+    /* ---------- Responsivo ---------- */
+    @media (max-width: 980px) {
+      .demo-grid { grid-template-columns: 1fr; }
+      .chat-stage { position: static; }
+      .chat-modal { height: 500px; }
+    }
+    @media (max-width: 760px) {
+      .nav-links li:not(:last-child) { display: none; }
+      .stats-bar { grid-template-columns: repeat(2, 1fr); }
+      .stat-card:nth-child(3)::before { display: none; }
+      .kpis { grid-template-columns: repeat(2, 1fr); }
+      .dash-split { grid-template-columns: 1fr; }
+      .trace-meta { grid-template-columns: repeat(2, 1fr); }
+      .demo-shell { padding: 1rem; border-radius: 24px; }
+      header.hero { padding-top: 3.5rem; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+      .hero-reveal > * { opacity: 1; transform: none; }
+      html { scroll-behavior: auto; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="bg-orb orb-1"></div>
+  <div class="bg-orb orb-2"></div>
+  <div class="bg-orb orb-3"></div>
+  <div class="bg-grid"></div>
+
+  <nav class="topnav" aria-label="Navegação principal">
+    <div class="topnav-inner">
+      <a class="brand" href="#topo">
+        <span class="brand-mark" aria-hidden="true">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M4 7h11M4 12h14M4 17h11M15 4l5 8-5 8"/></svg>
+        </span>
+        LIAA · PPGES
+      </a>
+      <ul class="nav-links">
+        <li><a href="#contexto">Contexto</a></li>
+        <li><a href="#solucao">Solução</a></li>
+        <li><a href="#arquitetura">Arquitetura</a></li>
+        <li><a href="#evolucao">Evolução</a></li>
+        <li><a class="nav-cta" href="#demo">Ver o agente</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <header class="hero" id="topo">
+    <div class="hero-reveal">
+      <div class="badge-top"><span class="badge-dot">LIAA</span>Laboratório de Inteligência Artificial Aplicada | PPGES</div>
+      <h1>Apoio Inteligente para Gerenciamento de Projetos</h1>
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="#demo">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
+          Ver o agente em ação
+        </a>
+        <a class="btn btn-ghost" href="#apresentacao">Assistir à apresentação</a>
+      </div>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="stats-bar">
+      <div class="stat-card"><div class="stat-number" data-count="50">50</div><div class="stat-label">LLM tools criadas</div></div>
+      <div class="stat-card"><div class="stat-number" data-count="28">28</div><div class="stat-label">Tools de escrita</div></div>
+      <div class="stat-card"><div class="stat-number" data-count="3">3</div><div class="stat-label">Áreas do PMBOK</div></div>
+      <div class="stat-card"><div class="stat-number">V1</div><div class="stat-label">Tool calling</div></div>
+    </div>
+  </div>
+
+  <!-- ============== DEMO DO AGENTE ============== -->
+  <div class="container-wide">
+    <section id="demo" aria-labelledby="demo-title">
+      <div class="demo-shell">
+        <div class="demo-head">
+          <div>
+            <h2 class="section-title" id="demo-title">O agente em ação</h2>
+            <p class="section-sub">Uma conversa simulada com o agente. À direita, o painel de governança registra cada execução, os tokens consumidos e as ferramentas chamadas pelo agente.</p>
+          </div>
+          <div class="demo-controls">
+            <ol class="steps" id="steps">
+              <li data-step="0"><span class="n">1</span>Resumo</li>
+              <li data-step="1"><span class="n">2</span>Consulta</li>
+              <li data-step="2"><span class="n">3</span>Alteração</li>
+            </ol>
+            <button class="btn btn-ghost btn-small" id="replayBtn" type="button">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>
+              <span id="replayLabel">Iniciar demonstração</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="demo-grid">
+          <!-- Chat -->
+          <div class="chat-stage">
+            <div class="app-window">
+              <div class="win-bar">
+                <div class="win-dots" aria-hidden="true"><i></i><i></i><i></i></div>
+                <div class="win-title">Silver Bullet</div>
+              </div>
+              <div class="chat-backdrop">
+                <div class="chat-modal" role="region" aria-label="Simulação do chat do assistente">
+                  <div class="chat-head">
+                    <div class="chat-head-top">
+                      <div>
+                        <h4>Assistente</h4>
+                        <small>Como posso ajudar?</small>
+                      </div>
+                      <div class="chat-head-icons" aria-hidden="true">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 14h6v6M20 10h-6V4M14 10l7-7M3 21l7-7"/></svg>
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+                      </div>
+                    </div>
+                    <div class="ctx-chips">
+                      <span class="k">Workspace</span><span>Workspace 1</span>
+                      <span class="k">Projeto</span><span>HelpDesk Pro</span>
+                    </div>
+                  </div>
+                  <div class="chat-body" id="chatBody" aria-live="polite"></div>
+                  <div class="chat-input">
+                    <div class="input-box" id="inputBox">
+                      <span class="ph" id="inputPh">Digite sua mensagem...</span>
+                      <span id="inputText"></span><span class="caret"></span>
+                    </div>
+                    <div class="send-btn" id="sendBtn" aria-hidden="true">
+                      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4z"/></svg>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </br>
+            <div class="panel">
+                  <div class="panel-head"><h5>Cronograma</h5><span id="actBadge" class="pill pill-late">Atrasada · 2 dias</span></div>
+                  <div class="activity" id="activity">
+                    <h6>Criar cadastro de usuários</h6>
+                    <div class="act-grid">
+                      <div><span>Início</span><b>20/10/2026</b></div>
+                      <div><span>Término estimado</span><b id="actEnd">15/11/2026</b></div>
+                    </div>
+                  </div>
+                </div>
+          </div>
+          
+
+          <!-- Dashboard -->
+          <div class="app-window">
+            <div class="win-bar">
+              <div class="win-dots" aria-hidden="true"><i></i><i></i><i></i></div>
+              <div class="win-title">Acompanhe como o agente é usado no projeto</div>
+            </div>
+            <div class="dash">
+
+              <div class="kpis">
+                <div class="kpi" id="kExec"><span>Execuções</span><strong>0</strong><em>0% de erro</em></div>
+                <div class="kpi" id="kTok"><span>Tokens totais</span><strong>0</strong><em>entrada + saída</em></div>
+                <div class="kpi" id="kDur"><span>Duração média</span><strong>0,0 s</strong><em>por execução</em></div>
+                <div class="kpi" id="kTools"><span>Chamadas de ferramentas</span><strong>0</strong><em>0 falha</em></div>
+              </div>
+
+              <div class="panel">
+                <div class="exec-scroll">
+                  <div class="exec-table">
+                    <div class="exec-row head">
+                      <div>Prompt</div><div>Status</div><div class="num">Etapas</div><div class="num">Entrada</div><div class="num">Saída</div><div class="num">Duração</div><div class="num">Ferramentas</div>
+                    </div>
+                    <div id="execRows"><div class="empty">Nenhuma execução registrada. Envie uma mensagem no chat para começar.</div></div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="panel">
+                <div class="panel-head"><h5>Detalhe da execução</h5><span id="traceStatus"></span></div>
+                <div class="trace-body" id="traceBody">
+                  <div class="empty">O rastro das chamadas de ferramentas aparece aqui.</div>
+                </div>
+              </div>
+
+              <div class="panel">
+                <div class="panel">
+                  <div class="panel-head"><h5>Ferramentas mais usadas</h5></div>
+                  <div class="bars" id="bars"><div class="empty">Nenhuma ferramenta chamada.</div></div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+        <p class="demo-note">Simulação</p>
+      </div>
+    </section>
+  </div>
+
+  <div class="container">
+
+    <section id="apresentacao">
+      <h2 class="section-title">Apresentação</h2>
+      <div class="glass-card video-card">
+        <iframe
+          src="https://www.youtube.com/embed/0HAzLff3M8Q"
+          title="Apresentação: Apoio Inteligente para Gerenciamento de Projetos"
+          loading="lazy"
+          allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowfullscreen></iframe>
+      </div>
+    </section>
+
+    <section id="contexto">
+      <h2 class="section-title">Contexto do Projeto</h2>
+      <div class="grid-cards">
+        <div class="glass-card">
+          <div class="card-icon" aria-hidden="true">📌</div>
+          <h3>Plataforma Silver Bullet</h3>
+          <p>Assistente virtual integrado diretamente à plataforma colaborativa de gestão, provendo suporte ativo via chat em linguagem natural.</p>
+        </div>
+        <div class="glass-card">
+          <div class="card-icon" aria-hidden="true">📘</div>
+          <h3>Diretrizes PMBOK</h3>
+          <p>Aplicação focada nas áreas essenciais: <strong>Integração</strong> (processos), <strong>Escopo</strong> (entregas) e <strong>Cronograma</strong> (prazos).</p>
+        </div>
+        <div class="glass-card">
+          <div class="card-icon" aria-hidden="true">🎓</div>
+          <h3>Ecossistema de Pesquisa</h3>
+          <p>Proposta de desenvolvimento para trabalho da disciplina <strong>Laboratório de Inteligência Artificial Aplicada</strong> no PPGES em cooperação com o grupo de pesquisa <strong>LESSE</strong>.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="problema">
+      <h2 class="section-title">O Problema Abordado</h2>
+      <div class="grid-cards">
+        <div class="glass-card">
+          <div class="card-icon" aria-hidden="true">⚙️</div>
+          <h3>Desafios Operacionais</h3>
+          <p>Gargalos frequentes na <strong>alocação de recursos</strong>, reatividade na gestão de riscos e alta pressão sobre os <strong>prazos de entrega</strong> devido a processos manuais.</p>
+        </div>
+        <div class="glass-card">
+          <div class="card-icon" aria-hidden="true">🎯</div>
+          <h3>Precisão nas Decisões</h3>
+          <p>Prover contexto suficiente ao copiloto para que as recomendações geradas aos gestores sejam auditáveis e confiáveis.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="solucao">
+      <h2 class="section-title">Proposta de Solução</h2>
+      <div class="grid-cards">
+        <div class="glass-card">
+          <div class="card-icon" aria-hidden="true">⚡</div>
+          <h3>Tool Calling (V1)</h3>
+          <p>Adoção de chamadas diretas de funções na fase inicial para validação ágil do protótipo, preparando o caminho para o protocolo MCP.</p>
+        </div>
+        <div class="glass-card">
+          <div class="card-icon" aria-hidden="true">🤖</div>
+          <h3>Agente Ativo</h3>
+          <p>Evolução de uma interface consultiva para um agente inteligente capaz de consultar e executar alterações ativas no projeto.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="arquitetura">
+      <h2 class="section-title">Arquitetura da Solução</h2>
+      <p class="section-sub">O caminho de uma mensagem do chat até o banco de dados, com um controle de acesso entre o modelo e as ferramentas.</p>
+      <div class="glass-card arch-card">
+        <div class="arch" role="group" aria-label="Diagrama da arquitetura">
+
+          <div class="node n-ui">
+            <div class="node-top">
+              <span class="node-ico" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
+              <div><small>Apresentação</small><h4>UI Chat</h4></div>
+            </div>
+            <p>Modal do assistente dentro do Silver Bullet.</p>
+            <div class="chips"><span>Contexto do projeto</span><span>Histórico</span></div>
+          </div>
+
+          <div class="arrow right a1" aria-hidden="true"><i></i></div>
+
+          <div class="node n-gw">
+            <div class="node-top">
+              <span class="node-ico" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="6" rx="1.5"/><rect x="3" y="14" width="18" height="6" rx="1.5"/><path d="M7 7h.01M7 17h.01"/></svg></span>
+              <div><small>Entrada</small><h4>AI Gateway</h4></div>
+            </div>
+            <p>Monta o contexto e registra cada execução no painel de governança.</p>
+            <div class="chips"><span>Tokens</span><span>Logs</span><span>Duração</span></div>
+          </div>
+
+          <div class="arrow right a2" aria-hidden="true"><i></i></div>
+
+          <div class="node n-llm">
+            <div class="node-top">
+              <span class="node-ico" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="6" width="12" height="12" rx="2"/><path d="M9 2v4M15 2v4M9 18v4M15 18v4M2 9h4M2 15h4M18 9h4M18 15h4"/></svg></span>
+              <div><small>Raciocínio</small><h4>LLM Provider</h4></div>
+            </div>
+            <p>Camada unificada que troca de provedor sem mudar a aplicação.</p>
+            <div class="chips"><span>Claude</span><span>Gemini</span></div>
+          </div>
+
+          <div class="arrow ud a3" aria-hidden="true"><i></i><span class="arrow-label">chamada · resultado</span></div>
+
+          <div class="node n-guard">
+            <div class="node-top">
+              <span class="node-ico" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg></span>
+              <div><small>Governança</small><h4>Guardrail</h4></div>
+            </div>
+            <p>Confere o perfil do usuário e o projeto antes de liberar cada chamada.</p>
+            <div class="chips"><span>Gerente</span><span>Stakeholder</span><span>Isolamento</span></div>
+          </div>
+
+          <div class="arrow lr a4" aria-hidden="true"><i></i></div>
+
+          <div class="node n-tools">
+            <div class="node-top">
+              <span class="node-ico" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.770a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></span>
+              <div><small>Orquestração</small><h4>Tools</h4></div>
+            </div>
+            <p>50 funções que o modelo pode chamar.</p>
+            <div class="chips"><span>22 leitura</span><span>28 escrita</span></div>
+          </div>
+
+          <div class="arrow down a5" aria-hidden="true"><i></i></div>
+
+          <div class="node n-app">
+            <div class="node-top">
+              <span class="node-ico" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 2 10 5-10 5L2 7z"/><path d="m2 17 10 5 10-5M2 12l10 5 10-5"/></svg></span>
+              <div><small>Domínio</small><h4>App Domain</h4></div>
+            </div>
+            <p>Regras de negócio das áreas do PMBOK.</p>
+            <div class="chips"><span>Integração</span><span>Escopo</span><span>Cronograma</span></div>
+          </div>
+
+          <div class="arrow right a6" aria-hidden="true"><i></i></div>
+
+          <div class="node n-db">
+            <div class="node-top">
+              <span class="node-ico" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/></svg></span>
+              <div><small>Persistência</small><h4>Database</h4></div>
+            </div>
+            <p>Dados dos projetos e histórico de execuções do agente.</p>
+          </div>
+
+          <div class="arch-notes">
+            <h4>Como uma mensagem percorre a arquitetura</h4>
+            <ol>
+              <li>O chat envia a mensagem com o workspace e o projeto abertos.</li>
+              <li>O gateway registra a execução e encaminha ao provedor de LLM.</li>
+              <li>O modelo decide qual ferramenta chamar.</li>
+              <li>O guardrail confere perfil e projeto antes de liberar a chamada.</li>
+              <li>A tool aplica a regra no domínio, que lê ou grava no banco.</li>
+              <li>O resultado volta ao modelo, que escreve a resposta.</li>
+            </ol>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <section id="evolucao">
+      <h2 class="section-title">Evolução e Andamento</h2>
+      
+      <div class="filter-bar" role="group" aria-label="Filtrar fases">
+        <button class="filter-btn active" type="button" data-filter="all">Todas as fases<span class="count" data-count-for="all"></span></button>
+        <button class="filter-btn" type="button" data-filter="done">Concluídas<span class="count" data-count-for="done"></span></button>
+        <button class="filter-btn" type="button" data-filter="active">Em progresso<span class="count" data-count-for="active"></span></button>
+      </div>
+
+      <div class="timeline">
+        <div class="timeline-item done" data-status="done">
+          <div class="timeline-dot">1</div>
+          <button class="timeline-content" type="button" aria-expanded="false">
+            <div class="timeline-header">
+              <strong>Fase 1: Concepção & Arquitetura em Camadas</strong>
+              <span class="right"><span class="status-tag tag-done">Concluído</span><svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg></span>
+            </div>
+            <p class="timeline-summary">Mapeamento do PMBOK e decisão de implementar Tool Calling (V1).</p>
+            <div class="expand-details"><div>Estruturação das áreas de Integração, Escopo e Cronograma. Modelagem da arquitetura separando UX, AI Gateway, Orquestrador e banco de dados.</div></div>
+          </button>
+        </div>
+
+        <div class="timeline-item done" data-status="done">
+          <div class="timeline-dot">2</div>
+          <button class="timeline-content" type="button" aria-expanded="false">
+            <div class="timeline-header">
+              <strong>Fase 2: Interface de Chat & Infraestrutura Inicial</strong>
+              <span class="right"><span class="status-tag tag-done">Concluído</span><svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg></span>
+            </div>
+            <p class="timeline-summary">Integração no Silver Bullet e primeiras chamadas de contexto.</p>
+            <div class="expand-details"><div>Validação da comunicação em linguagem natural via chat e infraestrutura básica para execução de ferramentas com dados de navegação do projeto.</div></div>
+          </button>
+        </div>
+
+        <div class="timeline-item done" data-status="done">
+          <div class="timeline-dot">3</div>
+          <button class="timeline-content" type="button" aria-expanded="false">
+            <div class="timeline-header">
+              <strong>Fase 3: Copiloto Read Only (19 Tools)</strong>
+              <span class="right"><span class="status-tag tag-done">Concluído</span><svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg></span>
+            </div>
+            <p class="timeline-summary">Implementação de 19 ferramentas somente leitura.</p>
+            <div class="expand-details"><div>Criação de ferramentas divididas em: <strong>Integração (7)</strong>, <strong>Escopo (5)</strong> e <strong>Cronograma (7)</strong> para validação de contexto e precisão das recomendações.</div></div>
+          </button>
+        </div>
+
+        <div class="timeline-item done" data-status="done">
+          <div class="timeline-dot">4</div>
+          <button class="timeline-content" type="button" aria-expanded="false">
+            <div class="timeline-header">
+              <strong>Fase 4: Provider LLM Unificado</strong>
+              <span class="right"><span class="status-tag tag-done">Concluído</span><svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg></span>
+            </div>
+            <p class="timeline-summary">Camada de abstração para múltiplos provedores de IA.</p>
+            <div class="expand-details"><div>Conexão unificada da aplicação permitindo alternar facilmente entre grandes modelos de linguagem como <strong>Claude (Anthropic)</strong> e <strong>Gemini (Google)</strong>.</div></div>
+          </button>
+        </div>
+
+        <div class="timeline-item done" data-status="done">
+          <div class="timeline-dot">5</div>
+          <button class="timeline-content" type="button" aria-expanded="false">
+            <div class="timeline-header">
+              <strong>Fase 5: Copiloto Leitura e Escrita (50 Tools)</strong>
+              <span class="right"><span class="status-tag tag-done">Concluído</span><svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg></span>
+            </div>
+            <p class="timeline-summary">Consolidação de 50 ferramentas com 28 utilitários de escrita.</p>
+            <div class="expand-details"><div>Demonstração bem-sucedida das 28 ferramentas de escrita ativas: Integração (16), Escopo (8) e Cronograma (4), capazes de atualizar termos, requisitos e atividades.</div></div>
+          </button>
+        </div>
+
+        <div class="timeline-item done" data-status="done">
+          <div class="timeline-dot">6</div>
+          <button class="timeline-content" type="button" aria-expanded="false">
+            <div class="timeline-header">
+              <strong>Fase 6: Controle de Acesso e Governança do Agente</strong>
+              <span class="right"><span class="status-tag tag-done">Concluído</span><svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg></span>
+            </div>
+            <p class="timeline-summary">Implementação de permissões por perfil (Gerente vs. Stakeholder) e auditoria.</p>
+            <div class="expand-details"><div>Garantia de acesso seguro às funcionalidades do sistema de acordo com o papel do usuário. Inclui painel de governança para monitoramento de tokens, taxa de erros, usuários ativos e chamadas das ferramentas.</div></div>
+          </button>
+        </div>
+
+        <div class="timeline-item done" data-status="done">
+          <div class="timeline-dot">7</div>
+          <button class="timeline-content" type="button" aria-expanded="false">
+            <div class="timeline-header">
+              <strong>Fase 7: Gestão de Contexto e Histórico no Chat</strong>
+              <span class="right"><span class="status-tag tag-done">Concluído</span><svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg></span>
+            </div>
+            <p class="timeline-summary">Compreensão contínua do histórico de mensagens para fluxo de conversa natural.</p>
+            <div class="expand-details"><div>Implementação da camada de contexto e memória da conversa, permitindo que o agente interprete referências anteriores (como atualizar prazos de atividades previamente consultadas) sem necessidade de reexplicação pelo usuário.</div></div>
+          </button>
+        </div>
+
+        <div class="glass-card tl-empty" id="tlEmpty">Nenhuma fase em progresso no momento. Todas as fases planejadas foram concluídas.</div>
+      </div>
+    </section>
+
+    <section id="futuro">
+      <h2 class="section-title">Implementações Futuras</h2>
+      <p class="section-sub">Próximos passos para ampliar o alcance e a autonomia do agente.</p>
+      <div class="grid-cards">
+        <div class="glass-card">
+          <div class="card-icon" aria-hidden="true">🔌</div>
+          <h3>Conexão via MCP</h3>
+          <p>Criação e evolução para o protocolo Model Context Protocol (MCP), permitindo maior extensibilidade e integração padronizada com ecossistemas de IA de mercado.</p>
+        </div>
+        <div class="glass-card">
+          <div class="card-icon" aria-hidden="true">📚</div>
+          <h3>Expansão para Demais Áreas do PMBOK</h3>
+          <p>Ampliação do escopo do agente para cobrir outras áreas de conhecimento do guia PMBOK (como Custos, Riscos, Qualidade e Comunicações) dentro da ferramenta Silver Bullet.</p>
+        </div>
+        <div class="glass-card">
+          <div class="card-icon" aria-hidden="true">⚙️</div>
+          <h3>Gerenciamento de Ações Automatizadas</h3>
+          <p>Implementação do controle e supervisão de rotinas e ações automatizadas executadas de forma autônoma pelo agente no projeto.</p>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <footer>
+    <div class="container">
+      <p>Apoio Inteligente para Gerenciamento de Projetos | LIAA - PPGES</p>
+    </div>
+  </footer>
+
+  <script>
+  (function () {
+    'use strict';
+
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const fmt = n => Math.round(n).toLocaleString('pt-BR');
+    const fmtSec = n => n.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + ' s';
+    const $ = id => document.getElementById(id);
+
+    /* ---------- Contadores do topo ---------- */
+    function countUp(el, to, dur, format, guard) {
+      const from = parseFloat(el.dataset.v || '0');
+      el.dataset.v = to;
+      if (reduceMotion) { el.textContent = format(to); return; }
+      const t0 = performance.now();
+      function tick(t) {
+        if (guard && !guard()) return;
+        const p = Math.min(1, (t - t0) / dur);
+        const e = 1 - Math.pow(1 - p, 3);
+        el.textContent = format(from + (to - from) * e);
+        if (p < 1) requestAnimationFrame(tick);
+      }
+      requestAnimationFrame(tick);
+    }
+    const statObs = new IntersectionObserver(entries => {
+      entries.forEach(en => {
+        if (!en.isIntersecting) return;
+        en.target.querySelectorAll('[data-count]').forEach(el => {
+          el.textContent = '0';
+          countUp(el, +el.dataset.count, 1200, fmt);
+        });
+        statObs.unobserve(en.target);
+      });
+    }, { threshold: .4 });
+    statObs.observe(document.querySelector('.stats-bar'));
+
+    /* ---------- Linha do tempo ---------- */
+    const items = document.querySelectorAll('.timeline-item');
+    document.querySelectorAll('.timeline-content').forEach(card => {
+      card.addEventListener('click', () => {
+        const open = card.classList.toggle('open');
+        card.setAttribute('aria-expanded', open);
+      });
+    });
+    document.querySelectorAll('[data-count-for]').forEach(el => {
+      const s = el.dataset.countFor;
+      const n = s === 'all' ? items.length : [...items].filter(i => i.dataset.status === s).length;
+      el.textContent = n;
+    });
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const status = btn.dataset.filter;
+        let visible = 0;
+        items.forEach(item => {
+          const show = status === 'all' || item.dataset.status === status;
+          item.style.display = show ? '' : 'none';
+          if (show) visible++;
+        });
+        $('tlEmpty').style.display = visible ? 'none' : 'block';
+      });
+    });
+
+    /* =================================================================
+       DEMO DO AGENTE
+       ================================================================= */
+    const SCRIPT = [
+      {
+        prompt: 'resuma o projeto',
+        time: '21:32', etapas: 1, tin: 39955, tout: 1385, dur: 6.3,
+        tools: [
+          { name: 'Ler Resumo do Projeto', kind: 'Leitura', stage: 0, ms: 4, out: '1,92 kB', input: '{}' },
+          { name: 'Ler Termo de Abertura', kind: 'Leitura', stage: 0, ms: 6, out: '3,41 kB', input: '{}' }
+        ],
+        reply: [
+          '**HelpDesk Pro** é uma aplicação web para centralizar o registro, a classificação, a priorização, a atribuição e o acompanhamento dos chamados de suporte técnico da TechSolutions Ltda., substituindo o controle feito por e-mails, mensagens e planilhas.',
+          '# Objetivos mensuráveis',
+          '- Entrar em produção em até 16 semanas após a autorização.',
+          '- Respeitar o orçamento de R$ 180.000,00.',
+          '- Entregar 100% das funcionalidades do escopo aprovado, sem defeitos críticos em aberto.'
+        ]
+      },
+      {
+        prompt: 'existe atividade atrasada?',
+        time: '21:34', etapas: 1, tin: 36450, tout: 120, dur: 1.8,
+        tools: [
+          { name: 'Listar Atividades Atrasadas', kind: 'Leitura', stage: 0, ms: 7, out: '0,64 kB', input: '{}' }
+        ],
+        afterTools: 'late',
+        reply: [
+          'Sim, há **1 atividade atrasada**:',
+          '- **Criar cadastro de usuários**: em andamento com progresso de 82%. O término estimado é 15/11/2026, e a atividade está 2 dias atrasada.'
+        ]
+      },
+      {
+        prompt: 'atualize a data final para 20/11',
+        time: '21:36', etapas: 2, tin: 58070, tout: 359, dur: 3.1,
+        tools: [
+          { name: 'Listar Atividades', kind: 'Leitura', stage: 0, ms: 5, out: '2,83 kB', input: '{}' },
+          { name: 'Editar Atividade', kind: 'Escrita', stage: 1, ms: 30, out: '23 B', input: '{\n  "id": "123456",\n  "end_date": "2026-11-20"\n}' }
+        ],
+        afterTools: 'update',
+        reply: [
+          'A data de término estimada de **Criar cadastro de usuários** foi alterada para **20/11/2026**. A data de início, 20/10/2026, não mudou.',
+          'Com essa data, a atividade deixa de estar atrasada, pois o prazo ainda não venceu.'
+        ]
+      }
+    ];
+
+    const chatBody = $('chatBody'), inputText = $('inputText'), inputPh = $('inputPh'),
+          inputBox = $('inputBox'), sendBtn = $('sendBtn'), execRows = $('execRows'),
+          traceBody = $('traceBody'), traceStatus = $('traceStatus'), barsEl = $('bars'),
+          stepsEl = $('steps'), replayLabel = $('replayLabel');
+
+    const SPEED = reduceMotion ? 0.25 : 1.25;
+    let runId = 0;
+    let state;
+
+    function sleep(ms) {
+      const id = runId;
+      return new Promise((res, rej) => setTimeout(() => (id === runId ? res() : rej('abort')), ms * SPEED));
+    }
+    const alive = id => () => id === runId;
+
+    function escapeHtml(s) {
+      return s.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+    }
+    function scrollChat() { chatBody.scrollTop = chatBody.scrollHeight; }
+
+    function setStep(i) {
+      stepsEl.querySelectorAll('li').forEach((li, k) => {
+        li.classList.toggle('done', k < i);
+        li.classList.toggle('active', k === i);
+      });
+    }
+
+    function addMsg(cls, html, time) {
+      const m = document.createElement('div');
+      m.className = 'msg ' + cls;
+      m.innerHTML = html + (time ? `<time>16/11/2026, ${time}</time>` : '');
+      chatBody.appendChild(m);
+      scrollChat();
+      return m;
+    }
+
+    function flash(el, cls = 'flash', ms = 1100) {
+      el.classList.add(cls);
+      setTimeout(() => el.classList.remove(cls), ms);
+    }
+
+    function resetDemo() {
+      state = { exec: 0, tin: 0, tout: 0, durSum: 0, tools: 0, tally: {} };
+      chatBody.innerHTML = '';
+      addMsg('msg-agent', 'Olá! Como posso ajudar?', '21:30');
+      inputText.textContent = '';
+      inputPh.style.display = '';
+      inputBox.classList.remove('typing');
+      sendBtn.classList.remove('ready', 'pressed');
+      execRows.innerHTML = '<div class="empty">Nenhuma execução registrada. Envie uma mensagem no chat para começar.</div>';
+      traceBody.innerHTML = '<div class="empty">O rastro das chamadas de ferramentas aparece aqui.</div>';
+      traceStatus.innerHTML = '';
+      barsEl.innerHTML = '<div class="empty">Nenhuma ferramenta chamada.</div>';
+      ['kExec', 'kTok', 'kTools'].forEach(k => { const s = $(k).querySelector('strong'); s.textContent = '0'; s.dataset.v = 0; });
+      const d = $('kDur').querySelector('strong'); d.textContent = fmtSec(0); d.dataset.v = 0;
+      $('kTools').querySelector('em').textContent = '0 falha';
+      $('kExec').querySelector('em').textContent = '0% de erro';
+      $('actEnd').innerHTML = '15/11/2026';
+      $('actEnd').classList.remove('changed');
+      const badge = $('actBadge'); badge.className = 'pill pill-late'; badge.textContent = 'Atrasada · 2 dias';
+      setStep(-1);
+    }
+
+    async function typeInput(text) {
+      inputBox.classList.add('typing');
+      inputPh.style.display = 'none';
+      for (const ch of text) {
+        inputText.textContent += ch;
+        sendBtn.classList.add('ready');
+        await sleep(45 + Math.random() * 45);
+      }
+      await sleep(350);
+      sendBtn.classList.add('pressed');
+      await sleep(160);
+      sendBtn.classList.remove('pressed', 'ready');
+      inputText.textContent = '';
+      inputPh.style.display = '';
+      inputBox.classList.remove('typing');
+    }
+
+    function addExecRow(step) {
+      if (state.exec === 0) execRows.innerHTML = '';
+      const row = document.createElement('div');
+      row.className = 'exec-row new';
+      row.innerHTML = `
+        <div class="p">${escapeHtml(step.prompt)}<small>16/11/2026, ${step.time}</small></div>
+        <div class="st"><span class="pill pill-run"><span class="spin"></span>Executando</span></div>
+        <div class="num et">–</div><div class="num ti">–</div><div class="num to">–</div><div class="num du">–</div><div class="num tl">0</div>`;
+      execRows.prepend(row);
+      return row;
+    }
+
+    function startTrace(step) {
+      traceStatus.innerHTML = '<span class="pill pill-run"><span class="spin"></span>Executando</span>';
+      traceBody.innerHTML = `
+        <div class="trace-prompt">${escapeHtml(step.prompt)}</div>
+        <div class="trace-meta">
+          <div><span>Etapas</span><b class="m-et">–</b></div>
+          <div><span>Tokens totais</span><b class="m-tok">–</b></div>
+          <div><span>Duração</span><b class="m-dur">–</b></div>
+        </div>
+        <div class="stages"></div>`;
+    }
+
+    function addToolCall(tool) {
+      const stages = traceBody.querySelector('.stages');
+      let stage = stages.querySelector(`[data-stage="${tool.stage}"]`);
+      if (!stage) {
+        stage = document.createElement('div');
+        stage.className = 'stage';
+        stage.dataset.stage = tool.stage;
+        stage.innerHTML = `<div class="stage-label">ETAPA ${tool.stage}</div>`;
+        stages.appendChild(stage);
+      }
+      const call = document.createElement('div');
+      call.className = 'tool-call';
+      const kindCls = tool.kind === 'Escrita' ? 'pill-write' : 'pill-read';
+      call.innerHTML = `
+        <div class="tool-call-top">
+          <code>${tool.name}</code>
+          <span class="pill ${kindCls}">${tool.kind}</span>
+          <span class="pill pill-run st"><span class="spin"></span>Executando</span>
+          <span class="t"></span>
+        </div>
+        <pre>${escapeHtml(tool.input)}</pre>`;
+      stage.appendChild(call);
+      return call;
+    }
+
+    function completeToolCall(call, tool) {
+      const st = call.querySelector('.st');
+      st.className = 'pill pill-ok st';
+      st.textContent = '✓ Sucesso';
+      call.querySelector('.t').textContent = `${tool.ms} ms · Saída: ${tool.out}`;
+    }
+
+    function updateBars(tool) {
+      state.tally[tool.name] = state.tally[tool.name] || { n: 0, w: tool.kind === 'Escrita' };
+      state.tally[tool.name].n++;
+      if (barsEl.querySelector('.empty')) barsEl.innerHTML = '';
+      let row = barsEl.querySelector(`[data-tool="${tool.name}"]`);
+      if (!row) {
+        row = document.createElement('div');
+        row.className = 'bar-row';
+        row.dataset.tool = tool.name;
+        row.innerHTML = `<div class="lbl"><span>${tool.name}</span><b>0</b></div><div class="bar-track"><div class="bar-fill ${tool.kind === 'Escrita' ? 'w' : ''}"></div></div>`;
+        barsEl.appendChild(row);
+      }
+      const max = Math.max(...Object.values(state.tally).map(t => t.n));
+      barsEl.querySelectorAll('.bar-row').forEach(r => {
+        const t = state.tally[r.dataset.tool];
+        r.querySelector('b').textContent = t.n;
+        requestAnimationFrame(() => { r.querySelector('.bar-fill').style.width = (t.n / max * 100) + '%'; });
+      });
+    }
+
+    function renderLine(line) {
+      const div = document.createElement('div');
+      div.className = 'ln';
+      let text = line;
+      if (line.startsWith('# ')) { div.classList.add('h'); text = line.slice(2); }
+      else if (line.startsWith('- ')) { div.classList.add('li'); text = line.slice(2); }
+      const segments = text.split(/(\*\*[^*]+\*\*)/).filter(Boolean).map(s =>
+        s.startsWith('**') ? { b: true, t: s.slice(2, -2) } : { b: false, t: s });
+      return { div, segments };
+    }
+
+    async function streamReply(lines, time) {
+      const msg = addMsg('msg-agent', '');
+      for (const line of lines) {
+        const { div, segments } = renderLine(line);
+        msg.appendChild(div);
+        for (const seg of segments) {
+          const node = seg.b ? document.createElement('strong') : document.createElement('span');
+          div.appendChild(node);
+          const words = seg.t.split(/(\s+)/);
+          for (const w of words) {
+            node.textContent += w;
+            if (w.trim()) { scrollChat(); await sleep(28 + Math.random() * 30); }
+          }
+        }
+        await sleep(90);
+      }
+      const t = document.createElement('time');
+      t.textContent = `16/11/2026, ${time}`;
+      msg.appendChild(t);
+      scrollChat();
+    }
+
+    function applyEffect(kind) {
+      const act = $('activity'), badge = $('actBadge');
+      if (kind === 'late') {
+        flash(act, 'alert', 1800);
+      }
+      if (kind === 'update') {
+        $('actEnd').innerHTML = '<s>15/11</s>20/11/2026';
+        $('actEnd').classList.add('changed');
+        badge.className = 'pill pill-ok';
+        badge.textContent = 'No prazo';
+        flash(act, 'flash', 1800);
+      }
+    }
+
+    async function runStep(step, i, id) {
+      setStep(i);
+      await sleep(i === 0 ? 700 : 1100);
+      await typeInput(step.prompt);
+      addMsg('msg-user', escapeHtml(step.prompt), step.time);
+
+      // dashboard: nova execução
+      const row = addExecRow(step);
+      state.exec++;
+      countUp($('kExec').querySelector('strong'), state.exec, 500, fmt, alive(id));
+      flash($('kExec'));
+      startTrace(step);
+
+      // agente "pensando" e chamando ferramentas
+      const thinking = addMsg('msg-agent thinking', '<span class="dots"><i></i><i></i><i></i></span>');
+      await sleep(700);
+
+      let toolsDone = 0;
+      for (const tool of step.tools) {
+        const call = addToolCall(tool);
+        await sleep(750);
+        completeToolCall(call, tool);
+        toolsDone++;
+        row.querySelector('.tl').textContent = toolsDone;
+        state.tools++;
+        countUp($('kTools').querySelector('strong'), state.tools, 400, fmt, alive(id));
+        flash($('kTools'));
+        updateBars(tool);
+        await sleep(250);
+      }
+      if (step.afterTools) applyEffect(step.afterTools);
+      // label.textContent = 'Escrevendo resposta…';
+      await sleep(550);
+      thinking.remove();
+
+      await streamReply(step.reply, step.time);
+
+      // dashboard: fecha execução
+      state.tin += step.tin; state.tout += step.tout; state.durSum += step.dur;
+      const st = row.querySelector('.st');
+      st.innerHTML = '<span class="pill pill-ok">✓ Sucesso</span>';
+      row.querySelector('.et').textContent = step.etapas;
+      ['ti', 'to'].forEach(k => {
+        const el = row.querySelector('.' + k); el.dataset.v = 0;
+        countUp(el, k === 'ti' ? step.tin : step.tout, 700, fmt, alive(id));
+      });
+      row.querySelector('.du').textContent = fmtSec(step.dur);
+      row.classList.add('settled');
+
+      traceStatus.innerHTML = '<span class="pill pill-ok">✓ Sucesso</span>';
+      traceBody.querySelector('.m-et').textContent = step.etapas;
+      traceBody.querySelector('.m-tok').textContent = fmt(step.tin + step.tout);
+      traceBody.querySelector('.m-dur').textContent = fmtSec(step.dur);
+      // traceBody.querySelector('.m-stop').textContent = 'end_turn';
+
+      countUp($('kTok').querySelector('strong'), state.tin + state.tout, 900, fmt, alive(id));
+      countUp($('kDur').querySelector('strong'), state.durSum / state.exec, 700, fmtSec, alive(id));
+      flash($('kTok')); flash($('kDur'));
+      await sleep(400);
+    }
+
+    async function runDemo() {
+      const id = ++runId;
+      resetDemo();
+      replayLabel.textContent = 'Reiniciar demonstração';
+      try {
+        for (let i = 0; i < SCRIPT.length; i++) {
+          await runStep(SCRIPT[i], i, id);
+        }
+        setStep(SCRIPT.length);
+        replayLabel.textContent = 'Reproduzir novamente';
+      } catch (e) {
+        if (e !== 'abort') console.error(e);
+      }
+    }
+
+    resetDemo();
+    $('replayBtn').addEventListener('click', runDemo);
+
+    let started = false;
+    const demoObs = new IntersectionObserver(entries => {
+      entries.forEach(en => {
+        if (en.isIntersecting && !started) { started = true; runDemo(); demoObs.disconnect(); }
+      });
+    }, { threshold: .35 });
+    demoObs.observe(document.querySelector('.demo-grid'));
+  })();
+  </script>
+</body>
+</html>
